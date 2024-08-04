@@ -1,0 +1,99 @@
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+      <meta charset="UTF-8">
+      <title>Configurar Grupos de Enlaces</title>
+      <style>
+          body {
+              font-family: Arial, sans-serif;
+              background-color: #2E3440;
+              color: #D8DEE9;
+              margin: 0;
+              padding: 20px;
+              width: 300px;
+          }
+          h1 {
+              color: #88C0D0;
+              text-align: center;
+              margin-bottom: 20px;
+          }
+          .container {
+              max-width: 100%;
+              margin: auto;
+          }
+          .group {
+              margin-bottom: 20px;
+              padding: 15px;
+              border: 1px solid #4C566A;
+              border-radius: 5px;
+              background-color: #3B4252;
+          }
+          .group-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+          }
+          .group-header input {
+              flex-grow: 1;
+              margin-right: 10px;
+          }
+          .links {
+              margin-top: 10px;
+          }
+          .link-container {
+              display: flex;
+              align-items: center;
+              margin-bottom: 10px;
+              cursor: move;
+          }
+          input[type="text"] {
+              width: calc(100% - 50px);
+              padding: 10px;
+              border: 1px solid #4C566A;
+              border-radius: 3px;
+              background-color: #4C566A;
+              color: #D8DEE9;
+          }
+          button {
+              padding: 10px 20px;
+              margin-top: 10px;
+              border: none;
+              border-radius: 5px;
+              background-color: #88C0D0;
+              color: #2E3440;
+              cursor: pointer;
+          }
+          button:hover {
+              background-color: #81A1C1;
+          }
+          .add-link, .remove-group, .remove-link {
+              background-color: #BF616A;
+              color: #ECEFF4;
+          }
+          .add-link:hover, .remove-group:hover, .remove-link:hover {
+              background-color: #D08770;
+          }
+          .remove-link {
+              margin-left: 10px;
+              padding: 5px 10px;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <h1>Configurar Grupos de Enlaces</h1>
+          <div id="groups"></div>
+          <button id="addGroup">Añadir Grupo</button>
+          <button id="save">Guardar</button>
+          <h2>Abrir Grupos</h2>
+          <div id="openGroups"></div>
+          <h2>Guardar Página Actual</h2>
+          <select id="groupSelect">
+              <option value="" disabled selected>Seleccionar grupo...</option>
+          </select>
+          <input type="text" id="newGroupName" placeholder="Nombre del nuevo grupo">
+          <button id="saveCurrentPage">Guardar Página Actual</button>
+      </div>
+      <script src="popup.js"></script>
+  </body>
+  </html>
