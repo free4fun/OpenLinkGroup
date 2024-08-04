@@ -33,7 +33,7 @@
      - Ensure the extension icon appears in the Chrome toolbar.
 
   ### Automatically
-  1. **Download** the file [OpenLinkGroup](openlinkgroup.crx) and Draw and Drop to Chrome.
+  1. **Download** the file [OpenLinkGroup](OpenLinkGroup.crx) and Draw and Drop to Chrome.
 
   ## Usage Instructions
 
@@ -59,6 +59,6 @@
 
   ## Contact
 
-  If you have any questions or need further assistance, please contact [Mauricio Sosa Giri] at [free4fun@riseup.net].
+  If you have any questions or need further assistance, please contact Mauricio (free4fun) Sosa Giri at [free4fun@riseup.net].
 
   Thank you for using Open Link Groups!
