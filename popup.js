@@ -1,182 +1,175 @@
-  document.addEventListener('DOMContentLoaded', () => {
-      loadGroups();
-      loadOpenGroups();
-      populateGroupSelect();
+let groups = {};
 
-      document.getElementById('addGroup').addEventListener('click', () => {
-          addGroup();
-      });
+function displayGroups() {
+    const container = document.getElementById('groups');
+    const openGroupsContainer = document.getElementById('openGroups');
+    container.innerHTML = '';
+    openGroupsContainer.innerHTML = '';
 
-      document.getElementById('save').addEventListener('click', () => {
-          saveGroups();
-      });
+    for (const groupName in groups) {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'group';
+        groupDiv.innerHTML = `
+            <div class="group-header">
+                <input type="text" value="${groupName}" class="group-name">
+                <button class="remove-group">Eliminar Grupo</button>
+            </div>
+            <div class="links"></div>
+            <button class="add-link">Añadir Enlace</button>
+        `;
 
-      document.getElementById('saveCurrentPage').addEventListener('click', () => {
-          saveCurrentPage();
-      });
-  });
+        const linksContainer = groupDiv.querySelector('.links');
+        groups[groupName].forEach(url => {
+            const linkDiv = document.createElement('div');
+            linkDiv.className = 'link-container';
+            linkDiv.innerHTML = `
+                <input type="text" value="${url}" class="link-url">
+                <button class="remove-link">X</button>
+            `;
+            linksContainer.appendChild(linkDiv);
+        });
 
-  function loadGroups() {
-      chrome.storage.sync.get('groups', (data) => {
-          const groups = data.groups || {};
-          const container = document.getElementById('groups');
-          container.innerHTML = '';
-          Object.keys(groups).forEach((groupName) => {
-              addGroup(groupName, groups[groupName]);
-          });
-      });
-  }
+        container.appendChild(groupDiv);
 
-  function addGroup(name = '', links = []) {
-      const container = document.getElementById('groups');
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'group';
-      groupDiv.innerHTML = `
-          <div class="group-header">
-              <input type="text" class="groupName" placeholder="Nombre del Grupo" value="${name}">
-              <button class="remove-group">Eliminar Grupo</button>
-          </div>
-          <div class="links">
-              ${links.map(link => `
-                  <div class="link-container" draggable="true">
-                      <input type="text" class="link" placeholder="Enlace" value="${link}">
-                      <button class="remove-link">X</button>
-                  </div>
-              `).join('')}
-              <button class="add-link">Añadir Enlace</button>
-          </div>
-      `;
-      container.appendChild(groupDiv);
+        const openGroupButton = document.createElement('button');
+        openGroupButton.textContent = `Abrir ${groupName}`;
+        openGroupButton.addEventListener('click', () => openGroup(groupName));
+        openGroupsContainer.appendChild(openGroupButton);
+    }
 
-      groupDiv.querySelector('.add-link').addEventListener('click', () => {
-          const linkContainer = document.createElement('div');
-          linkContainer.className = 'link-container';
-          linkContainer.draggable = true;
-          linkContainer.innerHTML = `
-              <input type="text" class="link" placeholder="Enlace">
-              <button class="remove-link">X</button>
-          `;
-          groupDiv.querySelector('.links').insertBefore(linkContainer, groupDiv.querySelector('.add-link'));
-          linkContainer.querySelector('.remove-link').addEventListener('click', () => {
-              linkContainer.remove();
-          });
-          addDragAndDropHandlers(linkContainer);
-      });
+    updateGroupSelect();
+}
 
-      groupDiv.querySelectorAll('.remove-link').forEach(button => {
-          button.addEventListener('click', (event) => {
-              event.target.parentElement.remove();
-          });
-      });
+function openGroup(groupName) {
+    if (groups[groupName]) {
+        groups[groupName].forEach(url => {
+            chrome.tabs.create({ url: url });
+        });
+    }
+}
 
-      groupDiv.querySelector('.remove-group').addEventListener('click', () => {
-          container.removeChild(groupDiv);
-      });
+function updateGroupSelect() {
+    const select = document.getElementById('groupSelect');
+    select.innerHTML = '<option value="" disabled selected>Seleccionar grupo...</option>';
+    for (const groupName in groups) {
+        const option = document.createElement('option');
+        option.value = groupName;
+        option.textContent = groupName;
+        select.appendChild(option);
+    }
+}
 
-      groupDiv.querySelectorAll('.link-container').forEach(linkContainer => {
-          addDragAndDropHandlers(linkContainer);
-      });
-  }
+function saveGroups() {
+    chrome.storage.local.set({groups: groups}, function() {
+        console.log('Grupos guardados');
+    });
+}
 
-  function saveGroups() {
-      const groups = {};
-      document.querySelectorAll('.group').forEach(groupDiv => {
-          const groupName = groupDiv.querySelector('.groupName').value;
-          const links = [];
-          groupDiv.querySelectorAll('.link').forEach(linkInput => {
-              if (linkInput.value) {
-                  links.push(linkInput.value);
-              }
-          });
-          if (groupName && links.length > 0) {
-              groups[groupName] = links;
-          }
-      });
-      chrome.storage.sync.set({ groups }, () => {
-          alert('Grupos guardados');
-          populateGroupSelect();
-      });
-  }
+function loadGroups() {
+    chrome.storage.local.get(['groups'], function(result) {
+        groups = result.groups || {};
+        displayGroups();
+    });
+}
 
-  function loadOpenGroups() {
-      chrome.storage.sync.get('groups', (data) => {
-          const groups = data.groups || {};
-          const container = document.getElementById('openGroups');
-          container.innerHTML = '';
-          Object.keys(groups).forEach((groupName) => {
-              const button = document.createElement('button');
-              button.textContent = `Abrir ${groupName}`;
-              button.addEventListener('click', () => {
-                  chrome.runtime.sendMessage({ action: 'openLinks', groupName });
-              });
-              container.appendChild(button);
-          });
-      });
-  }
+document.addEventListener('DOMContentLoaded', () => {
+    loadGroups();
 
-  function populateGroupSelect() {
-      chrome.storage.sync.get('groups', (data) => {
-          const groups = data.groups || {};
-          const select = document.getElementById('groupSelect');
-          select.innerHTML = '<option value="" disabled selected>Seleccionar grupo...</option>';
-          Object.keys(groups).forEach((groupName) => {
-              const option = document.createElement('option');
-              option.value = groupName;
-              option.textContent = groupName;
-              select.appendChild(option);
-          });
-      });
-  }
+    document.getElementById('addGroup').addEventListener('click', () => {
+        const groupName = prompt('Nombre del nuevo grupo:');
+        if (groupName) {
+            groups[groupName] = [];
+            displayGroups();
+        }
+    });
 
-  function saveCurrentPage() {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          const url = tabs[0].url;
-          const select = document.getElementById('groupSelect');
-          const newGroupName = document.getElementById('newGroupName').value;
+    document.getElementById('save').addEventListener('click', () => {
+        const groupElements = document.querySelectorAll('.group');
+        groups = {};
+        groupElements.forEach(groupElement => {
+            const groupName = groupElement.querySelector('.group-name').value;
+            const links = Array.from(groupElement.querySelectorAll('.link-url')).map(input => input.value);
+            groups[groupName] = links;
+        });
+        saveGroups();
+        alert('Grupos guardados');
+    });
 
-          let groupName = select.value;
-          if (newGroupName) {
-              groupName = newGroupName;
-          }
+    document.getElementById('saveCurrentPage').addEventListener('click', () => {
+        const selectedGroup = document.getElementById('groupSelect').value;
+        const newGroupName = document.getElementById('newGroupName').value;
 
-          if (groupName) {
-              chrome.runtime.sendMessage({ action: 'saveLink', groupName, url }, (response) => {
-                  if (response.status === 'success') {
-                      alert('Enlace guardado');
-                      loadGroups();
-                      populateGroupSelect();
-                  }
-              });
-          } else {
-              alert('Por favor, seleccione o ingrese un nombre de grupo.');
-          }
-      });
-  }
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            const currentUrl = tabs[0].url;
+            if (selectedGroup) {
+                groups[selectedGroup].push(currentUrl);
+            } else if (newGroupName) {
+                groups[newGroupName] = [currentUrl];
+            }
+            saveGroups();
+            displayGroups();
+        });
+    });
 
-  function addDragAndDropHandlers(linkContainer) {
-      linkContainer.addEventListener('dragstart', (event) => {
-          event.dataTransfer.setData('text/plain', null);
-          linkContainer.classList.add('dragging');
-      });
+    document.getElementById('groups').addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-group')) {
+            const groupName = e.target.closest('.group').querySelector('.group-name').value;
+            delete groups[groupName];
+            displayGroups();
+        } else if (e.target.classList.contains('remove-link')) {
+            const groupDiv = e.target.closest('.group');
+            const groupName = groupDiv.querySelector('.group-name').value;
+            const linkUrl = e.target.previousElementSibling.value;
+            groups[groupName] = groups[groupName].filter(url => url !== linkUrl);
+            displayGroups();
+        } else if (e.target.classList.contains('add-link')) {
+            const groupDiv = e.target.closest('.group');
+            const groupName = groupDiv.querySelector('.group-name').value;
+            const newUrl = prompt('Ingrese la URL del nuevo enlace:');
+            if (newUrl) {
+                groups[groupName].push(newUrl);
+                displayGroups();
+            }
+        }
+    });
 
-      linkContainer.addEventListener('dragend', () => {
-          linkContainer.classList.remove('dragging');
-      });
+    document.getElementById('openGroups').addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            const groupName = e.target.textContent.replace('Abrir ', '');
+            openGroup(groupName);
+        }
+    });
 
-      linkContainer.addEventListener('dragover', (event) => {
-          event.preventDefault();
-          const draggingElement = document.querySelector('.dragging');
-          if (draggingElement && draggingElement !== linkContainer) {
-              const container = linkContainer.parentElement;
-              const siblings = Array.from(container.querySelectorAll('.link-container'));
-              const draggingIndex = siblings.indexOf(draggingElement);
-              const targetIndex = siblings.indexOf(linkContainer);
+    document.getElementById('exportButton').addEventListener('click', () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(groups));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "groups_export.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    });
 
-              if (draggingIndex < targetIndex) {
-                  container.insertBefore(draggingElement, linkContainer.nextSibling);
-              } else {
-                  container.insertBefore(draggingElement, linkContainer);
-              }
-          }
-      });
-  }
+    document.getElementById('importButton').addEventListener('click', () => {
+        document.getElementById('importInput').click();
+    });
+
+    document.getElementById('importInput').addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedGroups = JSON.parse(e.target.result);
+                    groups = importedGroups;
+                    saveGroups();
+                    displayGroups();
+                    alert('Grupos importados con éxito');
+                } catch (error) {
+                    alert('Error al importar grupos: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+});

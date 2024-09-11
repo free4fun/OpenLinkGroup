@@ -1,29 +1,26 @@
-  {
-    "manifest_version": 3,
-    "name": "Abrir Grupos de Enlaces",
-    "version": "1.0",
-    "description": "Extensión para abrir grupos de enlaces configurables.",
-    "permissions": [
-      "tabs",
-      "storage"
-    ],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "16": "icon-16.png",
-        "48": "icon-48.png",
-        "128": "icon-128.png"
-      }
-    },
-    "icons": {
+{
+  "manifest_version": 3,
+  "name": "Abrir Grupos de Enlaces",
+  "version": "1.0",
+  "description": "Extensión para abrir grupos de enlaces configurables.",
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
       "16": "icon-16.png",
       "48": "icon-48.png",
       "128": "icon-128.png"
-    },
-    "content_security_policy": {
-      "extension_pages": "script-src 'self'; object-src 'self'"
     }
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
+}
