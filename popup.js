@@ -24,6 +24,7 @@ function displayGroups() {
             linkDiv.className = 'link-container';
             linkDiv.innerHTML = `
                 <input type="text" value="${url}" class="link-url">
+                <button class="open-link">Abrir</button>
                 <button class="remove-link">X</button>
             `;
             linksContainer.appendChild(linkDiv);
@@ -46,6 +47,10 @@ function openGroup(groupName) {
             chrome.tabs.create({ url: url });
         });
     }
+}
+
+function openLink(url) {
+    chrome.tabs.create({ url: url });
 }
 
 function updateGroupSelect() {
@@ -119,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (e.target.classList.contains('remove-link')) {
             const groupDiv = e.target.closest('.group');
             const groupName = groupDiv.querySelector('.group-name').value;
-            const linkUrl = e.target.previousElementSibling.value;
+            const linkUrl = e.target.previousElementSibling.previousElementSibling.value;
             groups[groupName] = groups[groupName].filter(url => url !== linkUrl);
             displayGroups();
         } else if (e.target.classList.contains('add-link')) {
@@ -130,6 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 groups[groupName].push(newUrl);
                 displayGroups();
             }
+        } else if (e.target.classList.contains('open-link')) {
+            const url = e.target.previousElementSibling.value;
+            openLink(url);
         }
     });
 
